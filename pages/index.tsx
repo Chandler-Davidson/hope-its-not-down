@@ -1,31 +1,71 @@
 import Link from 'next/link';
 import Head from '../components/head';
 import Nav from '../components/nav';
+import { useState, SyntheticEvent } from 'react';
+import Site from '../components/site';
+import { isValidUrl } from '../isSiteOnline';
+import { SessionStorage } from '../sessionStorage';
+import { isBrowser } from '../isBrowser';
 
-export default () => (
-  <div>
-    <Head title="Home" />
-    <Nav />
-    <div className="hero">
-      <h1 className="title">Welcome to create-next-app-cli (Create Next.js App building tools)</h1>
-      <p className="description">To get started, edit <code>pages/index.js</code> and save to reload.</p>
-      <div className="row">
-        <Link href="https://nextjs.org/docs/">
-          <a className="card">
-            <h3>Getting Started &rarr;</h3>
-            <p>Learn more about Next.js on official website</p>
-          </a>
-        </Link>
-        <Link href="https://github.com/themodernjavascript/create-next-app-cli">
-          <a className="card">
-            <h3>Create Next App CLI &rarr;</h3>
-            <p>Was this tools helpful?</p>
-          </a>
-        </Link>
+function buildSiteChecks(urls: string[]) {
+  if (urls.length === 0 && isBrowser())
+    urls = sessionStorage.getUrls();
+
+  return urls.map(u => (<Site key={u} url={u} />));
+}
+
+const sessionStorage = new SessionStorage();
+
+export default function () {
+  const [inputState, setInputState] = useState('chandlerdavidson.com');
+  const [sites, setSites] = useState([]);
+
+  function handleChange(event: SyntheticEvent) {
+    const target = event.target as HTMLInputElement;
+    setInputState(target.value);
+  }
+
+  function handleClick() {
+    const newSite = inputState;
+
+    if (!isValidUrl(inputState))
+      return;
+    
+    setInputState('');
+    setSites([...sites, newSite]);
+    sessionStorage.setUrl(newSite);
+  }
+
+  return (
+    <div>
+      <Head title="Hope it's not down" />
+      <div className="hero">
+        <h1 className="title">Hope its not down</h1>
       </div>
-    </div>
 
-    <style jsx>{`
+      <div style={{
+        display: "flex",
+        flexDirection: "row",
+        justifyContent: "center"
+      }}>
+        <input type="text" onChange={handleChange} value={inputState}/>
+        <button onClick={handleClick}>+</button>
+      </div>
+
+      <ul style={{display:"flex", flexDirection:"column", justifyContent:"center"}}>
+        {buildSiteChecks(sites)}
+      </ul>
+
+      <Link href="/faq">
+        <p style={{
+          textDecorationLine: "underline",
+          color: "gray",
+          position: "absolute",
+          bottom: "0"
+        }}>It says my site's down, but I know its not.</p>
+      </Link>
+
+      <style jsx>{`
       .hero {
         width: 100%;
         color: #333;
@@ -71,5 +111,6 @@ export default () => (
         color: #333;
       }
     `}</style>
-  </div>
-);
+    </div>
+  )
+}
