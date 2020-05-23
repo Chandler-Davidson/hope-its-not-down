@@ -1,10 +1,8 @@
-const withEsLint = require('next-eslint');
-
-module.exports = withEsLint({
+module.exports = {
   webpack: (config) => {
     config.node = {
       fs: 'empty'
     }
     return config
   }
-});
+};
